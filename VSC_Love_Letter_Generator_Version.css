@@ -1,0 +1,134 @@
+body {
+  background: linear-gradient(135deg, #ffd6e8, #ffb6d9);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Georgia", serif;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Floating Hearts */
+#hearts-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.heart {
+  position: absolute;
+  bottom: -20px;
+  font-size: 20px;
+  color: #ff6fa8;
+  opacity: 0.8;
+  animation: floatUp 4s linear forwards;
+}
+
+@keyframes floatUp {
+  from {
+    transform: translateY(0) translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-120vh) translateX(20px);
+    opacity: 0;
+  }
+}
+
+/* Main UI */
+.container {
+  background: white;
+  padding: 40px 50px;
+  border-radius: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  text-align: center;
+  max-width: 450px;
+  position: relative;
+  z-index: 2;
+}
+
+#saveBtn {
+    gap: 6px;
+	border-color: #d81b60; 
+	background: white;
+	border-radius: 12px;
+	padding: 9px 22px;
+	font-size: 1rem;
+	cursor: pointer;
+	margin: 8px;
+}
+
+#saveBtn:hover {
+    gap: 6px;
+	border-color: #d81b60; 
+	background: pink;
+	border-radius: 12px;
+	padding: 9px 22px;
+	font-size: 1rem;
+	cursor: pointer;
+	margin: 8px;
+}
+
+h1 {
+  margin-bottom: 20px;
+  color: #bf1b5e;
+  font-size: 2rem;
+}
+
+#message {
+  font-size: 1.2rem;
+  margin-bottom: 25px;
+  min-height: 80px;
+  opacity: 0;
+  transition: opacity .5s ease;
+  color: #a3134d;
+}
+
+.fade {
+  opacity: 1;
+}
+
+.main-btn,
+.secondary-btn {
+  padding: 12px 30px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  margin: 8px;
+}
+
+.main-btn {
+  background: #d81b60;
+  color: white;
+}
+
+.main-btn:hover {
+  background: #b0154f;
+}
+
+.secondary-btn {
+  background: #ffecf4;
+  color: #bf1b5e;
+}
+
+.secondary-btn:hover {
+  background: #ffd9e8;
+}
+
+h2 {
+  color: #c2185b;
+  margin-top: 25px;
+  font-size: 1.3rem;
+}
+
+ul {
+  text-align: left;
+  padding-left: 20px;
+  color: #7b0f3a;
+}
