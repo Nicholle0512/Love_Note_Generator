@@ -1,7 +1,7 @@
 # Love_Note_Generator
 
 Description:
-A love note generator made for my boyfriend, it includes a button to generate love notes and another to save those notes to a favorites section forever. 
+A love note generator made for my boyfriend, it includes a button to generate love notes and another to save those notes to a favorites section indefinitely. 
 
 Overview:
 This was a personal project that showcases my ability to implement basic HTML, CSS, and JavaScript into a web application.
