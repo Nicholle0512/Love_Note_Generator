@@ -1,28 +1,818 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Love Note Generator 💌</title>
-  <link rel="stylesheet" href="VSC_Love_Letter_Generator_Version.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper:         #efe5cf;
+  --paper-warm:    #f5ecd7;
+  --paper-deep:    #d9cdb0;
+  --paper-crease:  #b8a77f;
+  --ink:           #1a130c;
+  --ink-soft:      #3d2b1e;
+  --ink-faded:     #7a6248;
+  --wax:           #7e1a1a;
+  --wax-bright:    #a62929;
+  --wax-deep:      #4e0e0e;
+  --rust:          #b85535;
+  --edge:          #a59678;
+  --cream-light:   #fdf8ec;
+}
+ 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+html, body { min-height: 100vh; overflow-x: hidden; }
+ 
+body {
+  font-family: 'EB Garamond', Georgia, serif;
+  color: var(--ink);
+  background: radial-gradient(ellipse at 50% 28%, #f6ecd5 0%, #e8dcbe 46%, #d2c29a 100%);
+  padding: 56px 20px 96px;
+  position: relative;
+}
+ 
+/* Paper grain */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.1  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.38'/></svg>");
+  mix-blend-mode: multiply;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 1;
+}
+ 
+/* Vignette */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 42%, rgba(68, 45, 25, 0.28) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+ 
+#motes {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  overflow: hidden;
+}
+ 
+.mote {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--wax-bright) 0%, var(--wax) 40%, transparent 70%);
+  opacity: 0;
+  animation: drift 6s ease-out forwards;
+  filter: blur(0.3px);
+}
+ 
+@keyframes drift {
+  0%   { transform: translateY(0) translateX(0) scale(0.6); opacity: 0; }
+  12%  { opacity: 0.9; }
+  100% { transform: translateY(-90vh) translateX(var(--drift, 40px)) scale(0.2); opacity: 0; }
+}
+ 
+.wrap {
+  position: relative;
+  z-index: 2;
+  max-width: 720px;
+  margin: 0 auto;
+}
+ 
+/* ——— Masthead ——— */
+.masthead {
+  text-align: center;
+  margin-bottom: 48px;
+  position: relative;
+}
+ 
+.masthead .kicker {
+  font-family: 'EB Garamond', serif;
+  letter-spacing: 0.42em;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--ink-faded);
+  margin-bottom: 10px;
+}
+ 
+.masthead .kicker::before,
+.masthead .kicker::after {
+  content: '—';
+  margin: 0 14px;
+  opacity: 0.6;
+}
+ 
+.masthead h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(3rem, 8vw, 4.6rem);
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+ 
+.masthead .dateline {
+  margin-top: 16px;
+  font-family: 'Special Elite', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  color: var(--ink-faded);
+  text-transform: uppercase;
+}
+ 
+/* ——— Letter card ——— */
+.letter {
+  position: relative;
+  background: linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%);
+  padding: 64px 54px 68px;
+  margin: 0 auto;
+  max-width: 560px;
+  box-shadow:
+    0 1px 0 rgba(255, 250, 230, 0.6) inset,
+    0 -1px 0 rgba(100, 70, 30, 0.08) inset,
+    0 2px 0 rgba(0,0,0,0.04),
+    0 14px 30px -8px rgba(60, 35, 10, 0.3),
+    0 32px 66px -20px rgba(60, 35, 10, 0.24);
+  transform: rotate(-0.8deg);
+  transition: transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+ 
+/* Horizontal fold crease */
+.letter .crease {
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(100, 70, 30, 0.22) 15%, rgba(100, 70, 30, 0.22) 85%, transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+ 
+/* Very faint ruled lines */
+.letter .rules {
+  position: absolute;
+  inset: 64px 54px 68px;
+  background-image: linear-gradient(transparent 27px, rgba(120, 80, 30, 0.055) 28px);
+  background-size: 100% 28px;
+  pointer-events: none;
+  z-index: 1;
+}
+ 
+/* Postmark */
+.postmark {
+  position: absolute;
+  top: -20px;
+  right: 26px;
+  width: 104px;
+  height: 104px;
+  transform: rotate(-14deg);
+  opacity: 0.78;
+  pointer-events: none;
+  z-index: 3;
+  filter: drop-shadow(0 1px 0 rgba(255,250,230,0.3));
+}
+ 
+.postmark svg { width: 100%; height: 100%; }
+ 
+/* Letter header */
+.letter-header {
+  text-align: center;
+  border-bottom: 1px dashed var(--edge);
+  padding-bottom: 24px;
+  margin-bottom: 34px;
+  position: relative;
+  z-index: 2;
+}
+ 
+.letter-header .label {
+  font-family: 'Special Elite', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--wax);
+  margin-bottom: 10px;
+}
+ 
+.letter-header .to {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.8rem;
+  color: var(--ink-soft);
+}
+ 
+/* Message body */
+.message-area {
+  min-height: 170px;
+  padding: 24px 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+ 
+.message {
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 1.18rem;
+  line-height: 1.8;
+  color: var(--ink);
+  text-align: center;
+  max-width: 440px;
+  position: relative;
+  white-space: pre-wrap;
+}
+ 
+.message.typing::after {
+  content: '▍';
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--wax);
+  animation: blink 0.7s steps(2, end) infinite;
+  font-family: 'Special Elite', monospace;
+}
+ 
+@keyframes blink { 50% { opacity: 0; } }
+ 
+.message.empty {
+  font-style: italic;
+  color: var(--ink-faded);
+  font-family: 'EB Garamond', serif;
+  font-size: 1.3rem;
+  opacity: 0.85;
+}
+ 
+/* Signature */
+.signature {
+  text-align: right;
+  margin-top: 22px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.45rem;
+  color: var(--ink-faded);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s;
+  position: relative;
+  z-index: 2;
+}
+ 
+.signature.visible { opacity: 1; transform: translateX(0); }
+ 
+/* Actions */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 44px;
+  margin-top: 44px;
+  padding-top: 8px;
+  position: relative;
+  z-index: 2;
+}
+ 
+/* Wax seal button */
+.seal {
+  --size: 88px;
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+ 
+.seal:hover { transform: translateY(-3px) rotate(-4deg); }
+.seal:active { transform: translateY(2px) scale(0.94); }
+ 
+.seal-blob {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 32% 28%, var(--wax-bright) 0%, var(--wax) 42%, var(--wax-deep) 100%);
+  box-shadow:
+    inset -5px -7px 14px rgba(30, 0, 0, 0.55),
+    inset 4px 6px 10px rgba(255, 180, 160, 0.3),
+    0 5px 10px rgba(60, 10, 10, 0.42),
+    0 12px 24px rgba(60, 10, 10, 0.28);
+  clip-path: polygon(
+    50% 0%, 62% 4%, 72% 2%, 82% 8%, 92% 16%, 96% 28%, 100% 42%,
+    98% 54%, 96% 66%, 90% 78%, 82% 88%, 72% 94%, 62% 98%, 50% 100%,
+    38% 98%, 28% 94%, 18% 88%, 10% 78%, 4% 66%, 2% 54%, 0% 42%,
+    4% 28%, 8% 16%, 18% 8%, 28% 2%, 38% 4%
+  );
+}
+ 
+.seal-mark {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 2.6rem;
+  color: rgba(30, 0, 0, 0.58);
+  text-shadow: 1px 1px 0 rgba(255, 200, 180, 0.22);
+  letter-spacing: -0.05em;
+  pointer-events: none;
+}
+ 
+.seal-label,
+.stamp-label {
+  position: absolute;
+  top: calc(100% + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: 'Special Elite', monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: 0.78;
+}
+ 
+/* Stamp button */
+.stamp-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+ 
+.stamp-btn:hover { transform: translateY(-3px) rotate(3deg); }
+.stamp-btn:active { transform: translateY(1px) scale(0.95); }
+ 
+.stamp-face {
+  width: 84px; height: 88px;
+  background: var(--cream-light);
+  border: 2px dashed var(--ink-soft);
+  padding: 8px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  box-shadow: 0 3px 8px rgba(60, 30, 0, 0.18);
+}
+ 
+.stamp-face::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--ink-faded);
+  pointer-events: none;
+}
+ 
+.stamp-icon {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 4px;
+  color: var(--wax);
+}
+ 
+.stamp-text {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-family: 'Special Elite', monospace;
+  color: var(--ink-soft);
+}
+ 
+/* Saved press animation */
+.stamp-btn.saved .stamp-face { animation: stamp-press 0.55s ease; }
+@keyframes stamp-press {
+  0%   { transform: scale(1) rotate(0); }
+  25%  { transform: scale(0.9) rotate(-4deg); background: #f2c8a6; }
+  60%  { transform: scale(1.02) rotate(1deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+ 
+/* Ink blot that appears on save */
+.ink-blot {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--wax);
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+  opacity: 0;
+}
+.stamp-btn.saved .ink-blot { animation: ink-bloom 0.65s ease-out; }
+@keyframes ink-bloom {
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 0.65; }
+  100% { transform: translate(-50%, -50%) scale(9); opacity: 0; }
+}
+ 
+/* ——— The Shoebox ——— */
+.kept {
+  margin-top: 104px;
+  padding: 0 8px;
+}
+ 
+.kept-heading {
+  text-align: center;
+  margin-bottom: 52px;
+  position: relative;
+}
+ 
+.kept-heading::before,
+.kept-heading::after {
+  content: '';
+  position: absolute;
+  top: 58%;
+  width: 90px;
+  height: 1px;
+}
+.kept-heading::before { left: calc(50% - 210px); background: linear-gradient(90deg, transparent, var(--edge)); }
+.kept-heading::after  { right: calc(50% - 210px); background: linear-gradient(90deg, var(--edge), transparent); }
+ 
+.kept-heading .eyebrow {
+  font-family: 'Special Elite', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--ink-faded);
+  margin-bottom: 8px;
+}
+ 
+.kept-heading h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 2.4rem;
+  color: var(--ink);
+}
+ 
+.kept-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 36px 26px;
+  padding: 0;
+}
+ 
+.kept-card {
+  background: var(--paper-warm);
+  padding: 28px 24px 26px;
+  font-family: 'Special Elite', monospace;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--ink);
+  position: relative;
+  box-shadow:
+    0 2px 0 rgba(255, 250, 230, 0.6) inset,
+    0 4px 10px rgba(60, 30, 0, 0.14),
+    0 14px 24px -10px rgba(60, 30, 0, 0.22);
+  transform: rotate(var(--r, -1.4deg));
+  transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.4s;
+  animation: cardIn 0.55s ease both;
+}
+ 
+.kept-card:nth-child(3n)   { --r:  1.2deg; }
+.kept-card:nth-child(3n+1) { --r: -1.8deg; }
+.kept-card:nth-child(3n+2) { --r:  0.6deg; }
+ 
+.kept-card:hover {
+  transform: rotate(0) translateY(-5px);
+  box-shadow:
+    0 2px 0 rgba(255, 250, 230, 0.6) inset,
+    0 8px 16px rgba(60, 30, 0, 0.18),
+    0 24px 36px -12px rgba(60, 30, 0, 0.3);
+}
+ 
+/* Little wax dab pinning each card */
+.kept-card::before {
+  content: '';
+  position: absolute;
+  top: -11px; left: 22px;
+  width: 24px; height: 24px;
+  background: radial-gradient(circle at 35% 30%, var(--wax-bright) 0%, var(--wax) 45%, var(--wax-deep) 100%);
+  border-radius: 50%;
+  box-shadow:
+    inset -2px -3px 6px rgba(30, 0, 0, 0.5),
+    inset 2px 3px 4px rgba(255, 180, 160, 0.25),
+    0 2px 4px rgba(60, 10, 10, 0.3);
+  transform: rotate(-15deg);
+  clip-path: polygon(
+    50% 0%, 70% 5%, 90% 18%, 100% 40%, 96% 62%, 88% 82%,
+    68% 96%, 48% 100%, 28% 94%, 10% 80%, 2% 60%, 6% 36%, 22% 12%
+  );
+}
+ 
+.kept-card .no {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.88rem;
+  color: var(--ink-faded);
+  display: block;
+  margin-bottom: 10px;
+  letter-spacing: 0.12em;
+  padding-left: 30px;
+}
+ 
+.kept-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  color: var(--ink-faded);
+  padding: 48px 20px;
+  opacity: 0.85;
+  font-size: 1.1rem;
+}
+ 
+/* Footer mark */
+.footer-mark {
+  margin-top: 80px;
+  text-align: center;
+  font-family: 'Special Elite', monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.42em;
+  color: var(--ink-faded);
+  opacity: 0.55;
+  text-transform: uppercase;
+}
+.footer-mark::before,
+.footer-mark::after { content: '✻'; margin: 0 14px; }
+ 
+/* Entrance */
+@keyframes letterIn {
+  from { opacity: 0; transform: rotate(-3deg) translateY(22px); }
+  to   { opacity: 1; transform: rotate(-0.8deg) translateY(0); }
+}
+@keyframes mastheadIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: rotate(var(--r, -1.4deg)) translateY(12px); }
+  to   { opacity: 1; transform: rotate(var(--r, -1.4deg)) translateY(0); }
+}
+ 
+.masthead { animation: mastheadIn 0.8s ease both; }
+.letter   { animation: letterIn 1.05s cubic-bezier(0.2, 0.9, 0.3, 1) 0.2s both; }
+ 
+/* Mobile */
+@media (max-width: 560px) {
+  body { padding: 36px 14px 80px; }
+  .letter { padding: 46px 30px 52px; }
+  .letter .rules { inset: 46px 30px 52px; }
+  .actions { gap: 28px; margin-top: 36px; }
+  .postmark { width: 78px; height: 78px; top: -14px; right: 14px; }
+  .kept { margin-top: 80px; }
+  .kept-heading::before, .kept-heading::after { display: none; }
+  .seal { --size: 78px; }
+  .seal-mark { font-size: 2.2rem; }
+  .stamp-face { width: 76px; height: 80px; }
+}
+ 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
 </head>
-  
 <body>
-  <div id="hearts-container"></div>
-
-  <div class="container">
-    <h1>Love Note Generator 💌</h1>
-      <p id="message" class="fade">Click the button for a love note…</p>
-
-    <div class="btn-group">
-		  <button id="generateBtn" class="main-btn">Send Me Love</button>
-		  <button id="saveBtn"><span>❤</span>  Save to Favorites</button>
-	  </div>
-
-    <h2>Favorites</h2>
-      <ul id="favoritesList"></ul>
-  </div>
-
-  <script src="VSC_Love_Letter_Generator_Version.js"></script>
+ 
+<div id="motes" aria-hidden="true"></div>
+ 
+<div class="wrap">
+ 
+  <header class="masthead">
+    <div class="kicker">A Private Correspondence</div>
+    <h1>Love&nbsp;Notes</h1>
+    <div class="dateline" id="dateline"></div>
+  </header>
+ 
+  <article class="letter" id="letter">
+    <div class="crease" aria-hidden="true"></div>
+    <div class="rules" aria-hidden="true"></div>
+ 
+    <div class="postmark" aria-hidden="true">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="44" fill="none" stroke="#7e1a1a" stroke-width="1.2" stroke-dasharray="2 3"/>
+        <circle cx="50" cy="50" r="34" fill="none" stroke="#7e1a1a" stroke-width="0.8"/>
+        <text x="50" y="33" text-anchor="middle" font-family="Special Elite, monospace" font-size="7" fill="#7e1a1a" letter-spacing="1">SENT WITH</text>
+        <text x="50" y="56" text-anchor="middle" font-family="Cormorant Garamond, serif" font-style="italic" font-size="17" font-weight="700" fill="#7e1a1a">love</text>
+        <text x="50" y="72" text-anchor="middle" font-family="Special Elite, monospace" font-size="5.5" fill="#7e1a1a" letter-spacing="1">• EST. 2025 •</text>
+      </svg>
+    </div>
+ 
+    <div class="letter-header">
+      <div class="label">To you,</div>
+      <div class="to">my dearest —</div>
+    </div>
+ 
+    <div class="message-area">
+      <p class="message empty" id="message">press the seal, and I'll tell you something true</p>
+    </div>
+ 
+    <div class="signature" id="signature">— always yours,</div>
+ 
+    <div class="actions">
+      <button class="seal" id="generateBtn" aria-label="Open a new love note">
+        <span class="seal-blob" aria-hidden="true"></span>
+        <span class="seal-mark" aria-hidden="true">&amp;</span>
+        <span class="seal-label">press to open</span>
+      </button>
+ 
+      <button class="stamp-btn" id="saveBtn" aria-label="Keep this note in the shoebox">
+        <span class="ink-blot" aria-hidden="true"></span>
+        <span class="stamp-face">
+          <span class="stamp-icon" aria-hidden="true">♡</span>
+          <span class="stamp-text">keep</span>
+        </span>
+        <span class="stamp-label">save to shoebox</span>
+      </button>
+    </div>
+  </article>
+ 
+  <section class="kept">
+    <div class="kept-heading">
+      <div class="eyebrow">pressed between the pages</div>
+      <h2>the shoebox</h2>
+    </div>
+    <ul class="kept-list" id="favoritesList">
+      <li class="kept-empty">nothing saved yet — the box is still empty</li>
+    </ul>
+  </section>
+ 
+  <div class="footer-mark">written by hand · sealed in wax</div>
+ 
+</div>
+ 
+<script>
+// ——— Love Notes (unchanged — these are yours)
+const messages = [
+  "I love the way your arms wrap around me at night.",
+  "You make me feel so safe.",
+  "I think about you every minute you aren't around.",
+  "You don't even need to try, you look good doing anything.",
+  "You are my honey bear and favorite man on this planet.",
+  "I'm proud of the person you are growing into.",
+  "You have inspired me beyond a level words can describe.",
+  "My home is in your embrace.",
+  "I love you, my portable heater."
+];
+ 
+const signatures = [
+  "— always yours,",
+  "— ever yours,",
+  "— yours, still,",
+  "— with my whole heart,",
+  "— forever,"
+];
+ 
+const messageEl    = document.getElementById('message');
+const signatureEl  = document.getElementById('signature');
+const generateBtn  = document.getElementById('generateBtn');
+const saveBtn      = document.getElementById('saveBtn');
+const favoritesList = document.getElementById('favoritesList');
+const dateline     = document.getElementById('dateline');
+const letter       = document.getElementById('letter');
+const motes        = document.getElementById('motes');
+ 
+// Dateline
+const today = new Date();
+dateline.textContent = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+ 
+// In-memory storage
+let favorites = JSON.parse(localStorage.getItem('loveNotes:kept')) || [];
+let currentMessage = '';
+let lastIndex = -1;
+let typingInterval = null;
+let letterReady = false;
+ 
+renderFavorites();
+ 
+setTimeout(() => { letterReady = true; }, 1350);
+ 
+// Parallax tilt on the letter
+document.addEventListener('mousemove', (e) => {
+  if (!letterReady) return;
+  const x = (e.clientX / window.innerWidth) - 0.5;
+  const y = (e.clientY / window.innerHeight) - 0.5;
+  letter.style.transform = `rotate(${-0.8 + x * 0.7}deg) translate(${x * 5}px, ${y * 3}px)`;
+});
+ 
+// Typewriter reveal with slight rhythm variance
+function typewrite(text) {
+  if (typingInterval) clearTimeout(typingInterval);
+  messageEl.classList.remove('empty');
+  messageEl.classList.add('typing');
+  messageEl.textContent = '';
+  signatureEl.classList.remove('visible');
+  let i = 0;
+  const step = () => {
+    if (i < text.length) {
+      messageEl.textContent += text[i];
+      i++;
+      // human variance
+      const last = text[i - 1];
+      const delay = /[.,!?;—]/.test(last) ? 180 : 28 + Math.random() * 30;
+      typingInterval = setTimeout(step, delay);
+    } else {
+      typingInterval = null;
+      messageEl.classList.remove('typing');
+      const sig = signatures[Math.floor(Math.random() * signatures.length)];
+      signatureEl.textContent = sig;
+      signatureEl.classList.add('visible');
+    }
+  };
+  step();
+}
+ 
+// Generate a new note
+generateBtn.addEventListener('click', () => {
+  let idx;
+  do { idx = Math.floor(Math.random() * messages.length); }
+  while (idx === lastIndex && messages.length > 1);
+  lastIndex = idx;
+  currentMessage = messages[idx];
+  typewrite(currentMessage);
+  emberBurst(16);
+});
+ 
+// Save to shoebox
+saveBtn.addEventListener('click', () => {
+  if (!currentMessage) return;
+  saveBtn.classList.remove('saved');
+  void saveBtn.offsetWidth;
+  saveBtn.classList.add('saved');
+  if (favorites.includes(currentMessage)) return;
+  favorites.unshift(currentMessage);
+  renderFavorites();
+  localStorage.setItem('loveNotes:kept', JSON.stringify(favorites));
+});
+ 
+function renderFavorites() {
+  favoritesList.innerHTML = '';
+  if (favorites.length === 0) {
+    const empty = document.createElement('li');
+    empty.className = 'kept-empty';
+    empty.textContent = 'nothing saved yet — the box is still empty';
+    favoritesList.appendChild(empty);
+    return;
+  }
+  favorites.forEach((msg, i) => {
+    const li = document.createElement('li');
+    li.className = 'kept-card';
+    const num = document.createElement('span');
+    num.className = 'no';
+    num.textContent = `no. ${String(favorites.length - i).padStart(2, '0')}`;
+    const p = document.createElement('p');
+    p.textContent = msg;
+    li.appendChild(num);
+    li.appendChild(p);
+    li.style.animationDelay = `${i * 0.06}s`;
+    favoritesList.appendChild(li);
+  });
+}
+ 
+// Embers rising from the seal
+function ember(x, y) {
+  const m = document.createElement('div');
+  m.className = 'mote';
+  m.style.left = (x + (Math.random() - 0.5) * 36) + 'px';
+  m.style.top  = (y + (Math.random() - 0.5) * 10) + 'px';
+  m.style.setProperty('--drift', ((Math.random() - 0.5) * 140) + 'px');
+  m.style.animationDuration = (3.8 + Math.random() * 2.8) + 's';
+  const size = 3 + Math.random() * 6;
+  m.style.width = size + 'px';
+  m.style.height = size + 'px';
+  motes.appendChild(m);
+  setTimeout(() => m.remove(), 7200);
+}
+ 
+function emberBurst(count) {
+  const rect = generateBtn.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  for (let i = 0; i < count; i++) setTimeout(() => ember(x, y), i * 55);
+}
+ 
+</script>
+ 
 </body>
 </html>
 
