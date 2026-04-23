@@ -44,4 +44,3 @@ Press the red wax seal, from there a newly generated love note appears, written 
 - Export "The Shoebox" as a downloadable keepsake
 - Add audio content
 - Dated entries in "The Shoebox"
-- Responsiveness
